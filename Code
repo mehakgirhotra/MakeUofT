@@ -1,0 +1,81 @@
+
+
+#include<Wire.h>
+#include<LiquidCrystal_I2C.h>
+int tempPin1 = 0;
+LiquidCrystal_I2C lcd(0x27, 20, 4);
+
+void setup() {
+  lcd.init();
+  lcd.backlight();
+  Serial.begin(9600);
+# define Green 2
+# define Red 10
+# define Button 12
+  pinMode(Red, OUTPUT);
+  pinMode(Green, OUTPUT);
+  pinMode(Button, INPUT);
+
+
+}
+
+void loop() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  digitalWrite(Red, LOW);
+  digitalWrite(Green, LOW);
+  lcd.print("Push Button to Check");
+  int val = digitalRead(Button);
+  while (val != LOW) {
+    val = digitalRead(Button);
+  }
+  if (val == LOW) {
+    delay(500);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Checking");
+    delay(2000);
+    int i = 0;
+    double tempAvg = 0.0;
+    while (i < 15) {
+      int reading = analogRead(tempPin1);
+      Serial.print("\nRaw : ");
+      Serial.print(reading);
+      float voltage = reading * 3.3;
+      voltage /= 1024.0;
+      Serial.print(" : Volts : "); Serial.print(voltage);
+      float temperature1 = (voltage - 0.5) * 100;
+      tempAvg = tempAvg + temperature1;
+      Serial.print(" : Temp ('C): ");
+      Serial.print(temperature1);
+      i++;
+    }
+    tempAvg = tempAvg / 15.0;
+    delay(2000);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+
+    if (tempAvg <= 37.2)
+    {
+      digitalWrite(Red, LOW);
+      digitalWrite(Green, HIGH);
+      lcd.print("Temperature: ");
+      lcd.print(tempAvg);
+      lcd.setCursor(0, 1);
+      lcd.print("Please Enter!");
+    }
+    else {
+      digitalWrite(Red, HIGH);
+      digitalWrite(Green, LOW);
+      lcd.print("Temperature: ");
+      lcd.print(tempAvg);
+      lcd.setCursor(0, 1);
+      lcd.print("No Entry!");
+    }
+    delay(2000);
+  }
+  else {
+    exit(1);
+  }
+
+}
